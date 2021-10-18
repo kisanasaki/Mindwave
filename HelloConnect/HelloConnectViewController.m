@@ -335,54 +335,46 @@ NSDate *startDate;
     NSString *str_sample = [NSString stringWithFormat:@"%d",sample];
     
     // 記録開始ボタンがONのときの処理
-    if (btnRec == NO){
-        NSLog(@"BTN No");
-        return;
+    if (btnRec == YES){
+        // 記録時間の表示
+        NSDate *now = [NSDate date];
+        NSTimeInterval intervalTime = [now timeIntervalSinceDate:startDate];
+        NSString *str1 = [NSString stringWithFormat:@"%f", intervalTime];
+        self.recordTimer.text = str1;
+        
+        // rawdataをカンマ区切りで連結
+        NSString *str2 = [str_sample stringByAppendingString:@","];
+        [Raw appendString:str2];
+        rawdataCnt++;
+        if(rawdataCnt >= 512){
+            // SQLiteで保存（したい）
+            NSDate *now = [NSDate date];
+            NSDateFormatter *nowFormatter = [[NSDateFormatter alloc] init];
+            nowFormatter.dateFormat = @"yyyy/MM/dd HH:mm:ss.SSS"; // 日時（秒数まで）の情報を取得
+            NSString *stringNow = [nowFormatter stringFromDate:now];
+            
+            
+            NSURL* url = [NSURL URLWithString:@"clicker.tokyo"];
+            NSURLSessionConfiguration* config = [NSURLSessionConfiguration defaultSessionConfiguration];
+            NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url];
+            NSURLSession* session = [NSURLSession sessionWithConfiguration:config];
+            NSData* data = [@"Raw" dataUsingEncoding:NSUTF8StringEncoding];
+            request.HTTPMethod = @"POST";
+            request.HTTPBody = data;
+            NSURLSessionDataTask* task = [session dataTaskWithRequest:request
+            completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {                                                // 完了時の処理
+            }];
+            [task resume];
+            NSURLRequest *myRequest = [NSURLRequest requestWithURL:url];
+            //[self.webtest loadRequest:myRequest];
+
+
+            printf("%s,%s",[stringNow UTF8String],[Raw UTF8String]);   // 実験時のデータ取得用コード
+            // 各変数を初期化
+            Raw = [NSMutableString stringWithString:@""];
+            rawdataCnt = 0;
+        }
     }
-
-    // 記録時間の表示
-    NSDate *now = [NSDate date];
-    NSTimeInterval intervalTime = [now timeIntervalSinceDate:startDate];
-    NSString *str1 = [NSString stringWithFormat:@"%f", intervalTime];
-    self.recordTimer.text = str1;
-    
-    // rawdataをカンマ区切りで連結
-    NSString *str2 = [str_sample stringByAppendingString:@","];
-    [Raw appendString:str2];
-
-    // SQLiteで保存（したい）
-    NSDateFormatter *nowFormatter = [[NSDateFormatter alloc] init];
-    nowFormatter.dateFormat = @"yyyy/MM/dd HH:mm:ss.SSS"; // 日時（秒数まで）の情報を取得
-    NSString *stringNow = [nowFormatter stringFromDate:now];
-
-    // パラメータの作成
-    NSString *url = @"https://clicker.tokyo/rawdata";
-    NSString *param = @"Raw";
-    
-    // リクエストの生成
-    NSMutableURLRequest * request;
-    request = [NSMutableURLRequest new];
-    [request setHTTPMethod:@"POST"];
-    [request setURL:[NSURL URLWithString:url]];
-    [request setHTTPBody:[param dataUsingEncoding:NSUTF8StringEncoding]];
-
-    // 通信開始
-    NSURLResponse *response = nil;
-    NSError *error=nil;
-    NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
-    
-    if (error != nil) {
-        NSLog(@"Error! %@", error);
-        return;
-    }
-    
-    // printf("%s,%s",[stringNow UTF8String],[Raw UTF8String]);  // 実験時のデータ取得用コード
-    // 各変数を初期化
-    Raw = [NSMutableString stringWithString:@""];
-    rawdataCnt = 0;
-    
-    // 1秒スリープ
-    [NSThread sleepForTimeInterval: 1.0];
 }
 
 // --- Rawdata以外の信号取得 ---
