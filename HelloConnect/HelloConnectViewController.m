@@ -331,6 +331,9 @@ NSDate *startDate;
 // ---- Rawdataを保存する処理 ---
 -(void)eegSample:(int)sample // eegSample＝Rawdata。
 {
+    ///0.1秒スリープする
+    //[NSThread sleepForTimeInterval:0.1];
+    
     [ekgLineView addValue:sample]; // ekgLineView（グラフ）にRawdataが追加される
     NSString *str_sample = [NSString stringWithFormat:@"%d",sample];
     
@@ -353,26 +356,39 @@ NSDate *startDate;
             nowFormatter.dateFormat = @"yyyy/MM/dd HH:mm:ss.SSS"; // 日時（秒数まで）の情報を取得
             NSString *stringNow = [nowFormatter stringFromDate:now];
             
+            // パラメータの作成
+            NSString *url = @"https://clicker.tokyo/api/rawdata";
+            NSString *param = [NSString stringWithFormat:@"Raw=%@", Raw];
+            //NSString *param = [NSString stringWithFormat:@"Raw=%@&User_id=%d@", Raw,user_num];
             
-            NSURL* url = [NSURL URLWithString:@"clicker.tokyo"];
-            NSURLSessionConfiguration* config = [NSURLSessionConfiguration defaultSessionConfiguration];
-            NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url];
-            NSURLSession* session = [NSURLSession sessionWithConfiguration:config];
-            NSData* data = [@"Raw" dataUsingEncoding:NSUTF8StringEncoding];
-            request.HTTPMethod = @"POST";
-            request.HTTPBody = data;
-            NSURLSessionDataTask* task = [session dataTaskWithRequest:request
-            completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {                                                // 完了時の処理
-            }];
-            [task resume];
-            NSURLRequest *myRequest = [NSURLRequest requestWithURL:url];
-            //[self.webtest loadRequest:myRequest];
+            // リクエストの生成
+            NSMutableURLRequest * request;
+            request = [NSMutableURLRequest new];
+            [request setHTTPMethod:@"POST"];
+            [request setURL:[NSURL URLWithString:url]];
+            [request setHTTPBody:[param dataUsingEncoding:NSUTF8StringEncoding]];
 
+            // 通信開始
+            NSURLResponse *response = nil;
+            NSError *error=nil;
+            NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
+            
+            if (error != nil) {
+                NSLog(@"Error! %@", error);
+                return;
+            }
+            
+            NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *) response;
+            if (httpResponse.statusCode != 200) {
+                NSLog(@"statuscode: %ld", (long)httpResponse.statusCode);
+                return;;
+            }
 
-            printf("%s,%s",[stringNow UTF8String],[Raw UTF8String]);   // 実験時のデータ取得用コード
+            // printf("%s,%s",[stringNow UTF8String],[Raw UTF8String]);   // 実験時のデータ取得用コード
             // 各変数を初期化
             Raw = [NSMutableString stringWithString:@""];
             rawdataCnt = 0;
+           
         }
     }
 }
