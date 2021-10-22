@@ -306,10 +306,12 @@ NSDate *startDate;
         }
     });
     // userNoの表示
-    if ([mfgID isEqualToString:@"NS135F95"]){
-        user_num = 2;
-        self.userNo.text = @"userNo.2";
-    }
+    //userNoを表示するとエラー
+//    if ([mfgID isEqualToString:@"NS135F95"]){
+//        user_num = 2;
+//        self.userNo.text = @"userNo.2";
+//    }
+
 }
 -(void)didConnect
 {
@@ -357,10 +359,12 @@ NSDate *startDate;
             NSString *stringNow = [nowFormatter stringFromDate:now];
             
             // パラメータの作成
-            NSString *url = @"https://clicker.tokyo/api/rawdata";
-            NSString *param = [NSString stringWithFormat:@"Raw=%@", Raw];
-            //NSString *param = [NSString stringWithFormat:@"Raw=%@&User_id=%d@", Raw,user_num];
-            
+            //NSString *url = @"https://clicker.tokyo/api/rawdata";
+            //NSString *param = [NSString stringWithFormat:@"Raw=%@", Raw];
+            NSString *url = @"https://clicker.tokyo/api/rawdata2";
+            //NSString *param = [NSString stringWithFormat:@"Raw=%@&User_id=%@", Raw,user_num];
+            //数字をスマホの数字に合わせて変更してビルドする(@"7"のところ)
+            NSString *param = [NSString stringWithFormat:@"Raw=%@&User_id=%@", Raw,@"9"];
             // リクエストの生成
             NSMutableURLRequest * request;
             request = [NSMutableURLRequest new];
@@ -453,3 +457,4 @@ NSDate *startDate;
 //<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--<--
 
 @end
+
